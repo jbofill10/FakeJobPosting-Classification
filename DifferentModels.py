@@ -63,7 +63,7 @@ def compute(df):
     x_train = sc.fit_transform(x_train)
     x_test = sc.transform(x_test)
 
-    # logistic_regression(x_train,y_train,x_test,y_test)
+    logistic_regression(x_train,y_train,x_test,y_test)
     kNN(big_X, y)
 
 
