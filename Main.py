@@ -1,6 +1,6 @@
 import pandas as pd
 
-import LogisticRegression as log_reg
+import DifferentModels as log_reg
 
 def main():
     df = pd.read_csv('Data/fake_job_postings.csv')

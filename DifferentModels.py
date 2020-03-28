@@ -6,6 +6,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import mean_absolute_error
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score, GridSearchCV
 
 import numpy as np
 
@@ -60,17 +63,40 @@ def compute(df):
     x_train = sc.fit_transform(x_train)
     x_test = sc.transform(x_test)
 
+    # logistic_regression(x_train,y_train,x_test,y_test)
+    kNN(big_X, y)
+
+
+def kNN(x, y):
+    '''
+    knn = KNeighborsClassifier(n_neighbors=5)
+
+    knn.fit(x_train,y_train)
+
+
+    print(f'Prediction score: {knn.score(x_test, y_test) * 100:.2f}%')
+    '''
+    scalar = StandardScaler()
+    X = scalar.fit_transform(x)
+
+    knn = KNeighborsClassifier()
+
+    grid = GridSearchCV(knn, param_grid={'n_neighbors':range(1,31)}, scoring='accuracy')
+
+    grid.fit(X,y)
+
+    for i in range(0, len(grid.cv_results_['mean_test_score'])):
+        print('N_Neighbors {}: {} '.format(i+1, grid.cv_results_['mean_test_score'][i]))
+
+
+
+def logistic_regression(x_train, y_train, x_test, y_test):
     log_reg = LogisticRegression()
 
     log_reg.fit(x_train, y_train)
 
     y_pred = log_reg.predict(x_test)
 
-    print('\n')
-
     print(confusion_matrix(y_test, y_pred))
-
-    print('\n')
-
     print(f'Prediction score: {log_reg.score(x_test, y_test) * 100:.2f}%')
     print(f'MAE from Logistic Regression: {mean_absolute_error(y_test, y_pred) * 100:.2f}%')
