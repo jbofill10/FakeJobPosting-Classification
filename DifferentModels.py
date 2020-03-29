@@ -10,6 +10,7 @@ from sklearn.model_selection import GridSearchCV
 from  imblearn.under_sampling import RandomUnderSampler
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
 
 import numpy as np
 
@@ -71,9 +72,9 @@ def compute(df):
 
     x_train, x_test, y_train, y_test = train_test_split(undersampled_x, y, test_size=0.2, random_state=0)
 
-    logistic_regression(x_train,y_train,x_test,y_test)
+    #logistic_regression(x_train,y_train,x_test,y_test)
     print()
-    kNN(undersampled_x, y)
+    #kNN(undersampled_x, y)
     print()
     RandomForest(undersampled_x,y)
 
@@ -108,22 +109,9 @@ def RandomForest(x,y):
     rf = RandomForestClassifier(bootstrap=True)
 
     rf.fit(x,y)
+    # Cross validation of 5
+    score = cross_val_score(rf, x, y)
 
-    y_pred = rf.predict(x)
-    
-    cm = confusion_matrix(y,y_pred)
-
-    TP = cm[0][0]
-    FP = cm[0][1]
-    FN = cm[1][0]
-    TN = cm[1][1]
-
-    correct = TP+TN
-    total = correct + FN + FP
-
-    print(cm)
-
-    print(f'Prediction score: {correct/total * 100:.2f}%')
-    print(f'MAE from Random Forests: {mean_absolute_error(y, y_pred) * 100:.2f}%')
+    print(f'Prediction score: {np.mean(score) * 100:.2f}%')
 
 
