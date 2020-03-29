@@ -9,6 +9,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from  imblearn.under_sampling import RandomUnderSampler
 from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
 
 import numpy as np
 
@@ -71,11 +72,14 @@ def compute(df):
     x_train, x_test, y_train, y_test = train_test_split(undersampled_x, y, test_size=0.2, random_state=0)
 
     logistic_regression(x_train,y_train,x_test,y_test)
+    print()
     kNN(undersampled_x, y)
+    print()
+    RandomForest(undersampled_x,y)
 
 
 def kNN(x, y):
-
+    print('KNN Results:')
     knn = KNeighborsClassifier()
 
     grid = GridSearchCV(knn, param_grid={'n_neighbors':range(1,31)}, scoring='accuracy')
@@ -87,6 +91,7 @@ def kNN(x, y):
 
 
 def logistic_regression(x_train, y_train, x_test, y_test):
+    print("Logistic Regression results:")
     log_reg = LogisticRegression()
 
     log_reg.fit(x_train, y_train)
@@ -96,3 +101,29 @@ def logistic_regression(x_train, y_train, x_test, y_test):
     print(confusion_matrix(y_test, y_pred))
     print(f'Prediction score: {log_reg.score(x_test, y_test) * 100:.2f}%')
     print(f'MAE from Logistic Regression: {mean_absolute_error(y_test, y_pred) * 100:.2f}%')
+
+
+def RandomForest(x,y):
+    print("Random Forest results:")
+    rf = RandomForestClassifier(bootstrap=True)
+
+    rf.fit(x,y)
+
+    y_pred = rf.predict(x)
+    
+    cm = confusion_matrix(y,y_pred)
+
+    TP = cm[0][0]
+    FP = cm[0][1]
+    FN = cm[1][0]
+    TN = cm[1][1]
+
+    correct = TP+TN
+    total = correct + FN + FP
+
+    print(cm)
+
+    print(f'Prediction score: {correct/total * 100:.2f}%')
+    print(f'MAE from Random Forests: {mean_absolute_error(y, y_pred) * 100:.2f}%')
+
+
