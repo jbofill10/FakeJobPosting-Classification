@@ -1,5 +1,4 @@
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer, make_column_transformer
+from sklearn.compose import make_column_transformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.linear_model import LogisticRegression
@@ -7,8 +6,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import mean_absolute_error
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import KFold
-from sklearn.model_selection import cross_val_score, GridSearchCV
+from sklearn.model_selection import GridSearchCV
+from  imblearn.under_sampling import RandomUnderSampler
+from sklearn.decomposition import PCA
 
 import numpy as np
 
@@ -54,40 +54,36 @@ def compute(df):
 
     c_t = make_column_transformer((OneHotEncoder(), label_features), remainder='passthrough')
 
+    scalar = StandardScaler()
+
     big_X = c_t.fit_transform(X).toarray()
 
-    x_train, x_test, y_train, y_test = train_test_split(big_X, y, test_size=0.2, random_state=0)
+    big_X = scalar.fit_transform(big_X)
 
-    sc = StandardScaler()
+    pca = PCA()
 
-    x_train = sc.fit_transform(x_train)
-    x_test = sc.transform(x_test)
+    rus = RandomUnderSampler()
+
+    reduced_x = pca.fit_transform(big_X)
+
+    undersampled_x, y= rus.fit_resample(reduced_x, y)
+
+    x_train, x_test, y_train, y_test = train_test_split(undersampled_x, y, test_size=0.2, random_state=0)
 
     logistic_regression(x_train,y_train,x_test,y_test)
-    kNN(big_X, y)
+    kNN(undersampled_x, y)
 
 
 def kNN(x, y):
-    '''
-    knn = KNeighborsClassifier(n_neighbors=5)
-
-    knn.fit(x_train,y_train)
-
-
-    print(f'Prediction score: {knn.score(x_test, y_test) * 100:.2f}%')
-    '''
-    scalar = StandardScaler()
-    X = scalar.fit_transform(x)
 
     knn = KNeighborsClassifier()
 
     grid = GridSearchCV(knn, param_grid={'n_neighbors':range(1,31)}, scoring='accuracy')
 
-    grid.fit(X,y)
+    grid.fit(x,y)
 
     for i in range(0, len(grid.cv_results_['mean_test_score'])):
         print('N_Neighbors {}: {} '.format(i+1, grid.cv_results_['mean_test_score'][i]))
-
 
 
 def logistic_regression(x_train, y_train, x_test, y_test):
